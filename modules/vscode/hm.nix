@@ -5,13 +5,14 @@ let
     template = builtins.readFile ./template.mustache;
     extension = ".json";
   };
+  publisher = "Stylix";
+  name = "stylix";
+  version = "0.0.0";
 
   themePackageJson = pkgs.writeText "package.json" (builtins.toJSON {
-    name = "stylix";
+    inherit name publisher version;
     displayName = "Stylix";
     description = "Theme configured as part of your NixOS configuration.";
-    version = "0.0.0";
-    publisher = "Stylix";
     engines.vscode = "^1.43.0";
     categories = [ "Themes" ];
     contributes.themes = [{
@@ -26,7 +27,14 @@ let
     };
   });
 
-  themeExtension = pkgs.runCommandLocal "stylix-vscode" {} ''
+  themeExtension = pkgs.runCommandLocal "stylix-vscode" {
+    passthru = {
+      vscodeExtUniqueId="${publisher}.${name}";
+      vscodeExtPublisher=publisher;
+      vscodeExtName="stylix-vscode";
+      inherit version;
+    };
+  } ''
     mkdir -p $out/share/vscode/extensions/stylix/themes
     ln -s ${themePackageJson} $out/share/vscode/extensions/stylix/package.json
     ln -s ${themeFile} $out/share/vscode/extensions/stylix/themes/stylix.json
